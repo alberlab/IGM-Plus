@@ -15,6 +15,103 @@ from ..utils                          import HmsFile
 from ..parallel.async_file_operations import FilePoller
 from ..utils.log                      import logger
 
+def add_envelope(model, cfg, struct_id, monitored_restraints):
+
+        " Add the envelope volume confinement "
+
+        if cfg['model']['restraints']['envelope']['nucleus_shape'] == 'sphere':
+            ev = Envelope(cfg['model']['restraints']['envelope']['nucleus_shape'],
+                          cfg['model']['restraints']['envelope']['nucleus_radius'],
+                          cfg['model']['restraints']['envelope']['nucleus_kspring'])
+        elif cfg['model']['restraints']['envelope']['nucleus_shape'] == 'ellipsoid':
+            ev = Envelope(cfg['model']['restraints']['envelope']['nucleus_shape'],
+                          cfg['model']['restraints']['envelope']['nucleus_semiaxes'],
+                          cfg['model']['restraints']['envelope']['nucleus_kspring'])
+        elif cfg['model']['restraints']['envelope']['nucleus_shape'] == 'exp_map':
+
+            volume_prefix = cfg.get('model/restraints/envelope/volume_prefix')
+            volumes_idx   = cfg.get('model/restraints/envelope/volumes_idx')
+
+            #volume_file = volume_prefix + str(volumes_idx[idx]) + '/lamina/lamina.bin'
+            volume_file = os.path.join(volume_prefix + str(struct_id), 'lamina', 'lamina.bin')
+
+            ev = GenEnvelope(shape = cfg['model']['restraints']['envelope']['nucleus_shape'],
+                             volume_file = volume_file,
+                             k = cfg['model']['restraints']['envelope']['nucleus_kspring'])
+            logger.info(volume_file)
+
+        model.addRestraint(ev)
+        monitored_restraints.append(ev)
+
+# ===== ADD TRACING DATA =====
+def add_tracing(model, cfg, struct_id, monitored_restraints):
+
+            "Add tracing data"
+
+            kspring                 = cfg['restraints']['tracing']['kspring']
+            tracing_assignment_file = cfg['restraints']['tracing']['assignment_file']
+
+            # need to use one reference tolerance value
+            rad_tol = 100   # in nm, this is to loop over [NOT in the relax step]
+
+            logger.info('Positioning traced loci into their target positions with tolerance = ')
+            logger.info(rad_tol)
+
+            # add "Imaging" class restraints
+            imag = Tracing(
+                tracing_assignment_file,
+                radial_tolerance = rad_tol,
+                struct_id = struct_id,
+                k = kspring
+            )
+
+            model.addRestraint(imag)
+            monitored_restraints.append(imag)
+
+def add_nucleolus(model, cfg, struct_id, monitored_restraints):
+
+            "Add confinement effect from nucleoli"
+
+            nucleolus_prefix = cfg.get('model/restraints/nucleolus/volume_prefix')
+            nucleolus_idx    = cfg.get('model/restraints/nucleolus/volumes_idx')
+            k_spring         = cfg.get('model/restraints/nucleolus/nucleus_kspring')
+
+            #idx = struct_id % len(nucleolus_idx)
+            nucleolus_file = os.path.join(nucleolus_prefix + str(struct_id),'nucleoli', 'nucleoli.bin')
+
+            if os.path.isfile(nucleolus_file):
+                 nucl = GenEnvelope(shape = cfg['model']['restraints']['nucleolus']['nucleus_shape'],
+                             volume_file = nucleolus_file,
+                             k = k_spring)
+
+                 model.addRestraint(nucl)
+                 monitored_restraints.append(nucl)
+                 logger.info(nucleolus_file)
+            else:
+                 logger.info('No nucleolus file in this structure!')
+
+def add_speckles(model, cfg, struct_id, monitored_restraints):
+
+            "Add confinement effect from speckles"
+
+            speckles_prefix = cfg.get('model/restraints/speckles/volume_prefix')
+            speckles_idx    = cfg.get('model/restraints/speckles/volumes_idx')
+            k_spring          = cfg.get('model/restraints/speckles/nucleus_kspring')
+
+            #idx = struct_id % len(nucleolus_idx)
+            speckle_file = os.path.join(speckles_prefix + str(struct_id), 'speckles', 'speckles.bin')
+
+            if os.path.isfile(speckle_file):
+                 spec = GenEnvelope(shape = cfg['model']['restraints']['speckles']['nucleus_shape'],
+                             volume_file = speckle_file,
+                             k = k_spring)
+
+                 model.addRestraint(spec)
+                 monitored_restraints.append(spec)
+                 logger.info(speckle_file)
+            else:
+                 logger.info('No speckle file in this structure')
+
 
 class RelaxInit(Step):
 
@@ -129,6 +226,8 @@ class RelaxInit(Step):
         # add excluded volume restraint
         ex = Steric(cfg.get("model/restraints/excluded/evfactor"))
         model.addRestraint(ex)
+    
+        monitored_restraints = []
 
         # ======= ADD CHAIN CONNECTIVITY: either homopolymer or a distance distribution ======
 
@@ -152,80 +251,22 @@ class RelaxInit(Step):
               model.addRestraint(pp)
 
         # ======= ADD NUCLEAR VOLUME CONFINEMENT  add nucleus envelope restraint (spherical, ellipsoidal OR from data) ====
-
-        if cfg['model']['restraints']['envelope']['nucleus_shape'] == 'sphere':
-            ev = Envelope(cfg['model']['restraints']['envelope']['nucleus_shape'],
-                          cfg['model']['restraints']['envelope']['nucleus_radius'],
-                          cfg['model']['restraints']['envelope']['nucleus_kspring'])
-        elif cfg['model']['restraints']['envelope']['nucleus_shape'] == 'ellipsoid':
-            ev = Envelope(cfg['model']['restraints']['envelope']['nucleus_shape'],
-                          cfg['model']['restraints']['envelope']['nucleus_semiaxes'],
-                          cfg['model']['restraints']['envelope']['nucleus_kspring'])
-        elif cfg['model']['restraints']['envelope']['nucleus_shape'] == 'exp_map':
-
-
-            volume_prefix = cfg.get('model/restraints/envelope/volume_prefix')
-            volumes_idx   = cfg.get('model/restraints/envelope/volumes_idx')
-
-            # if this structure does not have a volume assigned, just use a spherical shape
-            idx = struct_id % len(volumes_idx)
-
-            volume_file = volume_prefix + str(volumes_idx[idx]) + '.bin'
-
-            ev = GenEnvelope(shape = cfg['model']['restraints']['envelope']['nucleus_shape'],
-                             volume_file = volume_file,
-                             k = cfg['model']['restraints']['envelope']['nucleus_kspring'])
-            logger.info(volume_file)
-                  
-
-        model.addRestraint(ev)
+        add_envelope(model, cfg, struct_id, monitored_restraints)
         logger.info(model.forces[-1])
         logger.info('Added the lamina volume confinement')
 
-
-        # ===== ADD TRACING DATA =====
+        # ===== add restraints from tracing and volumetric =====
 
         if "tracing" in cfg['restraints']:
-
-            kspring                 = cfg['restraints']['tracing']['kspring']
-            tracing_assignment_file = cfg['restraints']['tracing']['assignment_file']
-
-            # need to use one reference tolerance value
-            rad_tol = 50   # in nm, this is to loop over [NOT in the relax step]
-
-            logger.info('Positioning traced loci into their target positions with tolerance = ')
-            logger.info(rad_tol)
-
-            # add "Imaging" class restraints
-            imag = Tracing(
-                tracing_assignment_file,
-                radial_tolerance = rad_tol,
-                struct_id = struct_id,
-                k = kspring
-            )
-
-            model.addRestraint(imag)
- 
+            add_tracing(model, cfg, struct_id, monitored_restraints)
 
         # LB: add nuclear body "excluded volume" restraints (keep chromosomes out of nucleolar region)
         if 'nucleolus' in cfg['model']['restraints']:
+            add_nucleolus(model, cfg, struct_id, monitored_restraints)
 
-            nucleolus_prefix = cfg.get('model/restraints/nucleolus/volume_prefix')
-            nucleolus_idx    = cfg.get('model/restraints/nucleolus/volumes_idx')
-            elastic          = cfg.get('model/restraints/nucleolus/nucleus_kspring')
-
-
-            idx = struct_id % len(nucleolus_idx)
-            nucleolus_file = nucleolus_prefix + str(nucleolus_idx[idx]) + '.bin'
-
-            nucl = GenEnvelope(shape = cfg['model']['restraints']['nucleolus']['nucleus_shape'],
-                             volume_file = nucleolus_file,
-                             k = elastic)
-
-            model.addRestraint(nucl)
-            logger.info(nucleolus_file)
-
-            logger.info('No nucleolus!')                
+        # LB: add nuclear body "excluded volume" restraints (keep chromosomes out of nucleolar region)
+        if 'speckles' in cfg['model']['restraints']:
+            add_speckles(model, cfg, struct_id, monitored_restraints)
 
         logger.info(model.forces[-4])
         logger.info(model.forces[-3])
@@ -245,6 +286,30 @@ class RelaxInit(Step):
         # save optimization results (both optimized coordinates and violations) into a .hms file
         ofname = os.path.join(tmp_dir, 'relax_%d.hms' % struct_id)
         with HmsFile(ofname, 'w') as hms:
+
+            # loop over monitored restraints to keep an idea of what is going there
+            for r in monitored_restraints:
+
+                logger.info('Violations')
+                logger.info(r)
+
+                vs = []
+                n_imposed = 0
+                for fid in r.forceID:
+
+                    f = model.forces[fid]
+                    n_imposed += f.rnum
+                    if f.rnum > 1:
+                        # a list of values is appended to vs = [] at once
+                        vs += f.getViolationRatios(model.particles).tolist()
+                    else:
+                        # one value is appended at the time to vs = []
+                        vs.append(f.getViolationRatio(model.particles))
+           
+                violated_restr = np.count_nonzero(np.array(vs))
+                logger.info('Number of violations ')
+                logger.info(violated_restr)
+
             hms.saveModel(struct_id, model)
             hms.saveViolations(pp)
 
