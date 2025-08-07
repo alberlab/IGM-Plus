@@ -6,7 +6,7 @@ A population of individual full genome (diploid) structures is generated, which 
 
 August 25
 
-The current version improves upon [IGM 1.0][github.com/alberlab/igm], by allowing the following data to be used in the modeling:
+The current version improves upon [IGM 1.0][https://github.com/alberlab/IGM-Plus], by allowing the following data to be used in the modeling:
 - volume confinement from imaged single cell nuclear laminas, nucleoli, speckles
 - lamina DamID when using imaged single cell nuclear laminas, nucleoli, speckles
 - single cell chromating tracing data (e.g., DNA MERFISH, DNA seqFISH+)
