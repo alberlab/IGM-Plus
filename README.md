@@ -6,6 +6,22 @@ A population of individual full genome (diploid) structures is generated, which 
 
 We are currently working on an extensive user-friendly tutorial on `GitHub.io` to help users navigate parameter choice, set up their configuration file and run the code.
 
+We are also in the process of updating our supporting documentation. For the time being, please refer to the IGM1.0 documentation.
+
+Cite
+------------
+If you use genome structures generated using this platform OR you use the platform to generate your own structure, please consider citing our work
+    
+ Boninsegna, L., Yildirim, A., Polles, G. et al. Integrative genome modeling platform reveals essentiality of rare contact events in 3D genome organizations. Nat Methods 19, 938–949 (2022). https://doi.org/10.1038/s41592-022-01527-x.
+
+Notes
+--------
+We strongly advice against installing the software on a MacOS. Our experience showed that installation steps are not transferable from one version to the next, so we removed that information from this file.
+
+
+Updates
+---------
+
 August 25
 
 The current version improves upon [IGM 1.0][https://github.com/alberlab/igm], by allowing the following data to be used in the modeling:
@@ -148,36 +164,4 @@ A comprehensive configuration file ```igm-config_all.json``` for running a HFF p
     -   ```.hcs``` file is a 2Mb resolution Hi-C contact map
     - ``` config_file.json ``` is the .json configuration file with all the parameters needed for the calculation. In particular, we generate 100 structures, which means the lowest contact probability we can target is 0.01 (1 %). For different setups, we recommend using different names for the configuration file to avoid confusion. Whatever name is chosen, it will have to be updated when running the scripts.
     - Run IGM as detailed in the previous section (```igm-run config_file.json```), either serially or in parallel; the serial calculation (on a normal computer) all the way down to 1% probability should be completed in a few hours.
-
-
-Cite
-------------
-If you use genome structures generated using this platform OR you use the platform to generate your own structure, please consider citing our work
-    
-   Installation on MacOS (updated, Spt 2019)
---------------
-- this is tricky, we realized first hand that any MacOS update can suddenly compromise the functionality of the code. This installation was sometimes used to test different parts of the code in a serial environment, but never to generate populations.
--   Installation on MacOS poses additional challenges, especially on 11.14 Mojave (updated Sept 2019).  Standard  GNU ```gcc``` compiler may not be pre-installed; instead, the more efficient ```clang``` might be (this can be checked with ```gcc --version```):
-
-    ``` 
-    $ which gcc
-    /usr/bin/gcc
-    $ gcc --version
-    Configured with: --prefix=/Applications/Xcode.app/Contents/Developer/usr --with-gxx-include-dir=/usr/include/c++/4.2.1
-    Apple LLVM version 7.3.0 (clang-703.0.29)
-    Target: x86_64-apple-darwin15.4.0
-    Thread model: posix
-    InstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin
-    ```
-
-If you are getting this printout, then there is NO actual gcc installed. In order to circumvent that, the following procedure worked for me:
-
--   First install ```gcc``` using ```Homebrew```: 
-    ``` brew install gcc@9```
-
-    A gcc compiler will be installed, but we still need to make sure it supercedes the default ```clang```, anytime the C compiler is called. Assume the 9 version was installed, then the default installation path reads ```/usr/local/Cellar/gcc/9.0.2/```
-
--   Make sure the default gcc compiler points to that folder. This is the tricky part, since editing the PATH variable does not seem to always work. Renaming the executables seems to work but, again, no guarantee (see for instance ```https://stackoverflow.com/questions/28970935/osx-replace-gcc-version-4-2-1-with-4-9-installed-via-homebrew/28982564```)
-
--   Then, ```alabtools``` can be installed in the regular way (and ```igm``` also)
 
