@@ -29,6 +29,10 @@ class RandomInit(Step):
         self.keep_temporary_files = cfg["optimization"]["keep_temporary_files"]
         self.keep_intermediate_structures = cfg["optimization"]["keep_intermediate_structures"]
 
+        if "tracing" in self.cfg['restraints']:
+            logger.info('tracing initialization')
+            logger.info(self.cfg['restraints']['tracing']['assignment_file'])
+
     def setup(self):
         self.tmp_file_prefix = "random"
         self.argument_list = range(self.cfg["model"]["population_size"])
@@ -60,7 +64,7 @@ class RandomInit(Step):
         
         with HssFile(hssfilename,'r') as hss:
             index = hss.index
-            logger.info(hss.radii)
+            #logger.info(hss.radii)
 
         crd = generate_territories(index, nucleus_radius)
 

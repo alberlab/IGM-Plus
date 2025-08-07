@@ -15,7 +15,7 @@ from alabtools.analysis import HssFile
 from ..core import Step
 from ..model import Model, Particle
 from ..restraints import Polymer, Envelope, Steric, intraHiC, interHiC, Centromere, Sprite, Damid, GenEnvelope, Fish, Tracing
-from ..restraints import GenDamid, PolymerDistrib
+from ..restraints import GenDamid, PolymerDistrib, SingleCellFish
 from ..utils import HmsFile
 from ..utils.files import h5_create_group_if_not_exist, h5_create_or_replace_dataset, make_absolute_path
 from ..parallel.async_file_operations import FilePoller
@@ -26,6 +26,252 @@ from tqdm import tqdm
 # specifying violation histogram properties
 DEFAULT_HIST_BINS = 100
 DEFAULT_HIST_MAX = 0.1
+
+def add_envelope(model, cfg, struct_id, monitored_restraints):
+
+        " Add the envelope volume confinement "
+
+        if cfg['model']['restraints']['envelope']['nucleus_shape'] == 'sphere':
+            ev = Envelope(cfg['model']['restraints']['envelope']['nucleus_shape'],
+                          cfg['model']['restraints']['envelope']['nucleus_radius'],
+                          cfg['model']['restraints']['envelope']['nucleus_kspring'])
+        elif cfg['model']['restraints']['envelope']['nucleus_shape'] == 'ellipsoid':
+            ev = Envelope(cfg['model']['restraints']['envelope']['nucleus_shape'],
+                          cfg['model']['restraints']['envelope']['nucleus_semiaxes'],
+                          cfg['model']['restraints']['envelope']['nucleus_kspring'])
+        elif cfg['model']['restraints']['envelope']['nucleus_shape'] == 'exp_map':
+
+            volume_prefix = cfg.get('model/restraints/envelope/volume_prefix')
+            volumes_idx   = cfg.get('model/restraints/envelope/volumes_idx')
+
+            #volume_file = volume_prefix + str(volumes_idx[idx]) + '/lamina/lamina.bin'
+            volume_file = os.path.join(volume_prefix, str(struct_id), 'lamina', 'lamina.bin')
+
+            ev = GenEnvelope(shape = cfg['model']['restraints']['envelope']['nucleus_shape'],
+                             volume_file = volume_file,
+                             k = cfg['model']['restraints']['envelope']['nucleus_kspring'])
+            logger.info(volume_file)
+
+        model.addRestraint(ev)
+        monitored_restraints.append(ev)
+
+def add_tracing(model, cfg, struct_id, monitored_restraints):
+
+            "Add tracing data"
+
+            kspring                 = cfg['restraints']['tracing']['kspring']
+            tracing_assignment_file = cfg['restraints']['tracing']['assignment_file']
+
+            # need to use one reference tolerance value
+            rad_tol = 500   # in nm, this is to loop over [NOT in the relax step]
+
+            logger.info('Positioning traced loci into their target positions with tolerance = ')
+            logger.info(rad_tol)
+
+            # add "Imaging" class restraints
+            imag = Tracing(
+                tracing_assignment_file,
+                radial_tolerance = rad_tol,
+                struct_id = struct_id,
+                k = kspring
+            )
+
+            model.addRestraint(imag)
+            monitored_restraints.append(imag)
+
+def add_SCFish(model, cfg, struct_id, monitored_restraints):
+
+           "Add single cell FISH distances"
+            
+           k_spring         = cfg.get('restraints/single_cell_fish/k_spring')
+           distance_file    = cfg.get('restraints/single_cell_fish/distance_file')
+           tol              = 300
+            
+           # effectively add FISH restraints (index e' definito, check polymer restraint)
+           single_fish      = SingleCellFish(distance_file = distance_file, tol = tol, struct_id = struct_id,  k = k_spring)
+             
+           model.addRestraint(single_fish)
+           monitored_restraints.append(single_fish)
+
+
+def add_nucleolus(model, cfg, struct_id, monitored_restraints):
+
+            "Add confinement effect from nucleoli"
+
+            nucleolus_prefix = cfg.get('model/restraints/nucleolus/volume_prefix')
+            nucleolus_idx    = cfg.get('model/restraints/nucleolus/volumes_idx')
+            k_spring         = cfg.get('model/restraints/nucleolus/nucleus_kspring')
+
+            #idx = struct_id % len(nucleolus_idx)
+            nucleolus_file = os.path.join(nucleolus_prefix,str(struct_id),'nucleoli', 'nucleoli.bin')
+
+            if os.path.isfile(nucleolus_file):
+                 nucl = GenEnvelope(shape = cfg['model']['restraints']['nucleolus']['nucleus_shape'],
+                             volume_file = nucleolus_file,
+                             k = k_spring)
+
+                 model.addRestraint(nucl)
+                 monitored_restraints.append(nucl)
+                 logger.info(nucleolus_file)
+            else:
+                 logger.info('No nucleolus file in this structure!')
+
+def add_speckles(model, cfg, struct_id, monitored_restraints):
+
+            "Add confinement effect from speckles"
+
+            speckles_prefix = cfg.get('model/restraints/speckles/volume_prefix')
+            speckles_idx    = cfg.get('model/restraints/speckles/volumes_idx')
+            k_spring          = cfg.get('model/restraints/speckles/nucleus_kspring')
+
+            #idx = struct_id % len(nucleolus_idx)
+            speckle_file = os.path.join(speckles_prefix, str(struct_id), 'speckles', 'speckles.bin')
+
+            if os.path.isfile(speckle_file):
+                 spec = GenEnvelope(shape = cfg['model']['restraints']['speckles']['nucleus_shape'],
+                             volume_file = speckle_file,
+                             k = k_spring)
+
+                 model.addRestraint(spec)
+                 monitored_restraints.append(spec)
+                 logger.info(speckle_file)
+            else:
+                 logger.info('No speckle file in this structure')
+
+def add_hic(model, cfg, chrom, monitored_restraints):
+
+            # read parameters from cfg file
+            actdist_file  = cfg.get('runtime/Hi-C/actdist_file')
+            contact_range = cfg.get('restraints/Hi-C/contact_range', 2.0)
+            k             = cfg.get('restraints/Hi-C/contact_kspring', 0.05)
+
+            # centromere: fictional/artificial contacts to prevent centromere bundles to fly apart
+            #centr              = Centromere(actdist_file, chrom, contact_range, k)
+            #model.addRestraint(centr)       # we are not adding this to the "monitored_restraints" list, because we don't want to include
+                                            # them in the computation of residuals/fraction of violations. We want them to be enforced, but not count toward the 
+                                            # number of violations
+
+            # effectively add inter  HiC restraints (bonds)
+            interhic           = interHiC(actdist_file, chrom, contact_range, k)   # LB, add chrom option
+            model.addRestraint(interhic)
+            monitored_restraints.append(interhic)
+
+            intrahic           = intraHiC(actdist_file, chrom, contact_range, k)   # LB, add chrom option
+            model.addRestraint(intrahic)
+            monitored_restraints.append(intrahic)
+
+
+def add_damid(model, cfg, monitored_restraints):  # TO BE FIXED
+
+            actdist_file  =  cfg.get('runtime/DamID/damid_actdist_file')
+            k = cfg.get('restraints/DamID/contact_kspring', 0.05)
+            shape = cfg['model']['restraints']['envelope']['nucleus_shape']
+            contact_range = cfg.get('restraints/DamID/contact_range', 2.0)
+
+            if shape == 'sphere' or shape == 'ellipsoid':
+
+                 # effectively add DAMID restraints
+                 damid         = Damid(damid_file=actdist_file, contact_range=contact_range,
+                          nuclear_radius=radius, k=k,
+                          shape=shape, semiaxes=semiaxes)
+            else:
+                 volume_prefix = cfg.get('model/restraints/envelope/volume_prefix')
+                 volumes_idx   = cfg.get('model/restraints/envelope/volumes_idx')
+
+                 idx = struct_id % len(volumes_idx)
+                 volume_file = volume_prefix + str(volumes_idx[idx]) + '.bin'
+
+                 # effectively add damid restraints
+                 damid         = GenDamid(damid_file=actdist_file, contact_range=contact_range, k=k, volume_file = volume_file,
+                          shape=shape)
+
+
+            model.addRestraint(damid)
+            monitored_restraints.append(damid)
+
+
+def add_sprite(model, cfg, struct_id, monitored_restraints):
+
+            # read parameters from cfg file
+            sprite_tmp = make_absolute_path(
+                cfg.get('restraints/sprite/tmp_dir', 'sprite'),
+                cfg.get('parameters/tmp_dir')
+            )
+            sprite_assignment_filename = make_absolute_path(
+                cfg.get('restraints/sprite/assignment_file', 'sprite_assignment.h5'),
+                sprite_tmp
+            )
+
+            kspring = cfg['restraints']['sprite']['kspring']
+            vol_fraction = cfg['runtime']['sprite']['volume_fraction']
+
+            # effectively add SPRITE retraints 
+            sprite = Sprite(
+                sprite_assignment_filename,
+                volume_occupancy = vol_fraction,
+                struct_id = struct_id,
+                k = kspring
+            )
+
+            model.addRestraint(sprite)
+            monitored_restraints.append(sprite)
+
+
+def add_fish(model, cfg, index, struct_id, monitored_restraints):
+
+            # read parameters from cfg file
+            FISH_tmp = make_absolute_path(
+                cfg.get('restraints/FISH/tmp_dir', 'FISH'),
+                cfg.get('parameters/tmp_dir')
+            )
+            fish_assignment_file = make_absolute_path(
+                cfg.get('restraints/FISH/fish_file', 'fish_assignment.h5'),
+                FISH_tmp
+            )
+
+            kspring   = cfg['restraints']['FISH']['kspring']
+            tolerance = cfg['runtime']['FISH']['tol']
+            rtype     = cfg['restraints']['FISH']['rtype']
+
+            # effectively add FISH restraints (index e' definito, check polymer restraint)
+            fish      = Fish(fish_assignment_file = fish_assignment_file, index = index, struct_id = struct_id,
+                        kspring = kspring, tolerance = tolerance, rtype = rtype)
+
+            model.addRestraint(fish)
+            monitored_restraints.append(fish)
+
+def add_nucldamid(model, cfg, monitored_restraints):
+
+            shape = cfg['model']['restraints']['envelope']['nucleus_shape']
+            actdist_file  =  cfg.get('runtime/nuclDamID/damid_actdist_file')
+            k = cfg.get('restraints/nuclDamID/contact_kspring', 0.05)
+            contact_range = cfg.get('restraints/nuclDamID/contact_range', 2.0)
+
+            if shape == 'sphere' or shape == 'ellipsoid':
+
+                 # effectively add DAMID restraints
+                 damid         = Damid(damid_file=actdist_file, contact_range=contact_range,
+                          nuclear_radius=radius, k=k,
+                          shape=shape, semiaxes=semiaxes)
+
+            else:
+                 volume_prefix = cfg.get('model/restraints/nucleolus/volume_prefix')
+                 volumes_idx   = cfg.get('model/restraints/nucleolus/volumes_idx')
+
+                 idx = struct_id % len(volumes_idx)
+
+                 volume_file = volume_prefix + str(idx) + volumes_idx[idx] + '.bin'
+
+                 #logger.info(contact_range)
+                 logger.info(volume_file)
+
+                 # effectively add damid restraints
+                 nucldamid         = GenDamid(damid_file=actdist_file, contact_range=contact_range, k=k, volume_file = volume_file,
+                          shape=shape)
+
+            model.addRestraint(nucldamid)
+            monitored_restraints.append(nucldamid)
+
 
 
 class ModelingStep(Step):
@@ -216,8 +462,6 @@ class ModelingStep(Step):
         ex = Steric(cfg.get("model/restraints/excluded/evfactor"))
         model.addRestraint(ex)
 
-
-
         if 'polymer' in cfg['model']['restraints']:
              # add consecutive bead polymer restraint to ensure chain connectivity
              if cfg.get('model/restraints/polymer/polymer_bonds_style') != 'none':
@@ -248,259 +492,47 @@ class ModelingStep(Step):
                   logger.info('Chain restraints are included in violation calculation')
                   monitored_restraints.append(pp)
 
-        # add nucleus envelope restraint
-        shape = cfg.get('model/restraints/envelope/nucleus_shape')
-        envelope_k = cfg.get('model/restraints/envelope/nucleus_kspring')
-        radius = 0
-        semiaxes = (0, 0, 0)
+        add_envelope(model, cfg, struct_id, monitored_restraints)
+        logger.info(model.forces[-1])
+        logger.info('Added the lamina volume confinement')
 
-        if shape == 'sphere':
-            radius = cfg.get('model/restraints/envelope/nucleus_radius')
-            ev = Envelope(shape, radius, envelope_k)
-        elif cfg['model']['restraints']['envelope']['nucleus_shape'] == 'ellipsoid':
-            semiaxes = cfg.get('model/restraints/envelope/nucleus_semiaxes')
-            ev = Envelope(shape, semiaxes, envelope_k)
-        elif cfg['model']['restraints']['envelope']['nucleus_shape'] == 'exp_map':
+        # ===== add restraints from tracing and volumetric =====
 
-            volume_prefix = cfg.get('model/restraints/envelope/volume_prefix')
-            volumes_idx   = cfg.get('model/restraints/envelope/volumes_idx')
+         # LB
+        if "single_cell_fish" in cfg['restraints']:
+            add_SCFish(model, cfg, struct_id, monitored_restraints)
 
-            idx = struct_id % len(volumes_idx)
-
-            volume_file = volume_prefix + str(volumes_idx[idx]) + '.bin'
-            ev = GenEnvelope(shape = cfg['model']['restraints']['envelope']['nucleus_shape'],
-                             volume_file = volume_file,
-                             k = cfg['model']['restraints']['envelope']['nucleus_kspring'])
-            logger.info(volume_file)
-
-        model.addRestraint(ev)
-        monitored_restraints.append(ev)
-
-
-        # LB imaging data
+        # LB
         if "tracing" in cfg['restraints']:
+            add_tracing(model, cfg, struct_id, monitored_restraints)
 
-            kspring = cfg['restraints']['tracing']['kspring']
-            tracing_assignment_file = cfg['restraints']['tracing']['assignment_file']
-            rad_tol = cfg['runtime']['tracing']['tol']   # in nm, this is to loop over
+        # LB: add nuclear body "excluded volume" restraints (keep chromosomes out of nucleolar region)
+        if 'nucleolus' in cfg['model']['restraints']:
+            add_nucleolus(model, cfg, struct_id, monitored_restraints)
 
-            print('tolerance = ' + str(rad_tol))
-            print('struct_id = ' + str(struct_id))
-            print('spring k   = ' + str(kspring))
- 
-            # add "Tracing" class restraints
-            imag = Tracing(
-                tracing_assignment_file,
-                radial_tolerance = rad_tol,
-                struct_id = struct_id,
-                k = kspring
-            )
+        # LB: add nuclear body "excluded volume" restraints (keep chromosomes out of nucleolar region)
+        if 'speckles' in cfg['model']['restraints']:
+            add_speckles(model, cfg, struct_id, monitored_restraints)
 
-            model.addRestraint(imag)
-            monitored_restraints.append(imag)
-            #print(model.particles[-1], len(model.particles))
-
-            #logger.info(monitored_restraints[-1])
- 
-       # LB: add nuclear body excluded volume restraints
-        if "nucleolus" in cfg['model']['restraints']:
-
-            nucleolus_prefix = cfg.get('model/restraints/nucleolus/volume_prefix')
-            nucleolus_idx   = cfg.get('model/restraints/nucleolus/volumes_idx')
-            elastic         = cfg.get('model/restraints/nucleolus/nucleus_kspring')
-
-            # if this structure does not have a nucleolus assigned, no nucleolus
-
-            idx = struct_id % len(nucleolus_idx)
-
-            nucleolus_file = nucleolus_prefix + str(nucleolus_idx[idx]) + '.bin'
-
-            nucl = GenEnvelope(shape = cfg['model']['restraints']['nucleolus']['nucleus_shape'],
-                             volume_file = nucleolus_file,
-                             k = elastic)
-
-            model.addRestraint(nucl)
-            monitored_restraints.append(nucl)
-
-
-            logger.info(volume_file)
-            logger.info('No nucleolus!')
-
-
-        # add DAMID restraint
+        # LB: general DamID for  nucleoli
         if "nuclDamID" in cfg['restraints']:
-
-            # read parameters from cfg file
-            #actdist_file  = './AICS_fictional_damid_assign_large.h5' #cfg.get('runtime/DamID/damid_actdist_file')
-
-            shape = cfg['model']['restraints']['envelope']['nucleus_shape']
-            actdist_file  =  cfg.get('runtime/nuclDamID/damid_actdist_file')
-            logger.info(actdist_file)
-
-            k = cfg.get('restraints/nuclDamID/contact_kspring', 0.05)
-
-            if shape == 'sphere' or shape == 'ellipsoid':
-
-                 contact_range = cfg.get('restraints/nuclDamID/contact_range', 2.0)
-
-                 # effectively add DAMID restraints
-                 damid         = Damid(damid_file=actdist_file, contact_range=contact_range,
-                          nuclear_radius=radius, k=k,
-                          shape=shape, semiaxes=semiaxes)
-
-            else:
-
-                 contact_range = cfg.get('restraints/nuclDamID/contact_range', 2.0)
-                 
-                 volume_prefix = cfg.get('model/restraints/nucleolus/volume_prefix')
-                 volumes_idx   = cfg.get('model/restraints/nucleolus/volumes_idx')
-
-                 idx = struct_id % len(volumes_idx)
-
-                 volume_file = volume_prefix + str(idx) + volumes_idx[idx] + '.bin'  
-                 
-                 #logger.info(contact_range)
-                 logger.info(volume_file)
-
-                 # effectively add damid restraints
-                 nucldamid         = GenDamid(damid_file=actdist_file, contact_range=contact_range, k=k, volume_file = volume_file,
-                          shape=shape)
-
-
-            model.addRestraint(nucldamid)
-            monitored_restraints.append(nucldamid)
-
-        # ---- IGM MODELING RESTRAINTS FROM EXPERIMENTAL DATA ---- #
+            add_nucldamid(model, cfg, monitored_restraints)
 
         # add Hi-C restraint
         if "Hi-C" in cfg['restraints']:
-            
-            # read parameters from cfg file
-            actdist_file  = cfg.get('runtime/Hi-C/actdist_file')
-            contact_range = cfg.get('restraints/Hi-C/contact_range', 2.0)
-            k             = cfg.get('restraints/Hi-C/contact_kspring', 0.05)
-
-            logger.info(contact_range)
-
-            # centromere: fictional/artificial contacts to prevent centromere bundles to fly apart
-            #centr              = Centromere(actdist_file, chrom, contact_range, k)
-            #model.addRestraint(centr)       # we are not adding this to the "monitored_restraints" list, because we don't want to include
-                                            # them in the computation of residuals/fraction of violations. We want them to be enforced, but not count toward the 
-                                            # number of violations
-
-            # effectively add inter  HiC restraints (bonds)
-            interhic           = interHiC(actdist_file, chrom, contact_range, k)   # LB, add chrom option
-            model.addRestraint(interhic)
-            monitored_restraints.append(interhic)
-
-            intrahic           = intraHiC(actdist_file, chrom, contact_range, k)   # LB, add chrom option
-            model.addRestraint(intrahic)
-            monitored_restraints.append(intrahic)
-
-
+            add_hic(model, cfg, chrom, monitored_restraints)
+         
         # add DAMID restraint
         if "DamID" in cfg['restraints']:
-
+            add_damid(model, cfg, monitored_restraints)
             # read parameters from cfg file
-            #actdist_file  = './AICS_fictional_damid_assign_large.h5' #cfg.get('runtime/DamID/damid_actdist_file')
-            actdist_file  =  cfg.get('runtime/DamID/damid_actdist_file')
-            logger.info(actdist_file)
-         
-            k = cfg.get('restraints/DamID/contact_kspring', 0.05)
-
-            if shape == 'sphere' or shape == 'ellipsoid':
-
-                 contact_range = cfg.get('restraints/DamID/contact_range', 2.0)
-
-                 # effectively add DAMID restraints
-                 damid         = Damid(damid_file=actdist_file, contact_range=contact_range,
-                          nuclear_radius=radius, k=k,
-                          shape=shape, semiaxes=semiaxes)
-            
-            else:
-
-                 contact_range = cfg.get('restraints/DamID/contact_range', 2.0)
-
-                 volume_prefix = cfg.get('model/restraints/envelope/volume_prefix')
-                 volumes_idx   = cfg.get('model/restraints/envelope/volumes_idx')
-
-                 idx = struct_id % len(volumes_idx)
-
-                 volume_file = volume_prefix + str(volumes_idx[idx]) + '.bin'
-
-                 logger.info(contact_range)
-                 logger.info(volume_file)
-
-                 # effectively add damid restraints
-                 damid         = GenDamid(damid_file=actdist_file, contact_range=contact_range, k=k, volume_file = volume_file,
-                          shape=shape)
-
-
-            model.addRestraint(damid)
-            monitored_restraints.append(damid)
-
-        #logger.info('\n\n')
-
-        #logger.info(monitored_restraints[-4])
-        #logger.info(monitored_restraints[-3])
-        #logger.info(monitored_restraints[-2])
-        #logger.info(monitored_restraints[-1])
- 
-        logger.info('latest four restraints applied to this genome structure')
-        logger.info(model.forces[-4])
-        logger.info(model.forces[-3])
-        logger.info(model.forces[-2])
-        logger.info(model.forces[-1])
 
         # add SPRITE restraint
         if "sprite" in cfg['restraints']:
-
-            # read parameters from cfg file
-            sprite_tmp = make_absolute_path(
-                cfg.get('restraints/sprite/tmp_dir', 'sprite'),
-                cfg.get('parameters/tmp_dir')
-            )
-            sprite_assignment_filename = make_absolute_path(
-                cfg.get('restraints/sprite/assignment_file', 'sprite_assignment.h5'),
-                sprite_tmp
-            )
-
-            kspring = cfg['restraints']['sprite']['kspring']
-            vol_fraction = cfg['runtime']['sprite']['volume_fraction']
-
-            # effectively add SPRITE retraints 
-            sprite = Sprite(
-                sprite_assignment_filename,
-                volume_occupancy = vol_fraction,
-                struct_id = struct_id,
-                k = kspring
-            )
-
-            model.addRestraint(sprite)
-            monitored_restraints.append(sprite)
+            add_sprite(model, cfg, struct_id, monitored_restraints)
 
         if "FISH" in cfg['restraints']:
-
-            # read parameters from cfg file
-            FISH_tmp = make_absolute_path(
-                cfg.get('restraints/FISH/tmp_dir', 'FISH'),
-                cfg.get('parameters/tmp_dir')
-            )
-            fish_assignment_file = make_absolute_path(
-                cfg.get('restraints/FISH/fish_file', 'fish_assignment.h5'),
-                FISH_tmp
-            )
-
-            kspring   = cfg['restraints']['FISH']['kspring']
-            tolerance = cfg['runtime']['FISH']['tol']
-            rtype     = cfg['restraints']['FISH']['rtype']
-
-            # effectively add FISH restraints (index e' definito, check polymer restraint)
-            fish      = Fish(fish_assignment_file = fish_assignment_file, index = index, struct_id = struct_id,
-                        kspring = kspring, tolerance = tolerance, rtype = rtype) 
-
-            model.addRestraint(fish)
-            monitored_restraints.append(fish) 
+            add_fish(model, cfg, index, struct_id, monitored_restraints)          # read parameters from cfg file
        
         print(len(index), len(model.particles))
  
@@ -520,8 +552,8 @@ class ModelingStep(Step):
             vstat = {}
             for r in monitored_restraints:
 
-                logger.info('Violations')
-                logger.info(r)
+                #logger.info('Violations')
+                #logger.info(r)
 
                 vs = []
                 n_imposed = 0
@@ -533,7 +565,7 @@ class ModelingStep(Step):
 			# a list of values is appended to vs = [] at once
                         vs += f.getViolationRatios(model.particles).tolist()
                         logger.info(f)
-                        #logger.info(vs)
+                        logger.info(vs)
                         #logger.info('\n\n')
                     else:
 			# one value is appended at the time to vs = []

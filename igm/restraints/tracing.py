@@ -53,12 +53,10 @@ class Tracing(Restraint):
 
             # add a centroid in the target position
             centroid_pos = target[i]
-            print(centroid_pos)
+            #print(centroid_pos)
 
             centroid     = model.addParticle(centroid_pos, 0, Particle.DUMMY_STATIC) # no excluded volume
 
             f = model.addForce(HarmonicUpperBound( (centroid, locus[i]), float(self.radial_tolerance), self.k, note = Restraint.TRACING))
             self.forceID.append(f)
-
-            #print(model.forces[-5:])
 

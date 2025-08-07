@@ -5,6 +5,7 @@ import os
 import os.path
 import shutil
 from tqdm import tqdm
+import random
 
 from alabtools.analysis import HssFile
 
@@ -93,6 +94,15 @@ class FishAssignmentStep(Step):
         if     'tol'  not in cfg.get("runtime/FISH"):
             cfg["runtime"]["FISH"]["tol"]      = cfg.get("runtime/FISH/tol_list").pop(0)
 
+        if 'batches' in cfg.get("restraints/FISH"):
+            logger.info('Adding batches of FISH pairs to the simulation at a time')
+
+            if 'batch_list' not in cfg.get("runtime/FISH"):
+                 cfg["runtime"]["FISH"]["batch_list"] = cfg.get("restraints/FISH/batches")[:]
+
+            if 'batch' not in cfg.get("runtime/FISH"):
+                 cfg["runtime"]["FISH"]["batch"] = cfg.get("runtime/FISH/batch_list").pop(0)
+
         # inherit all attributes and methods of parent class "Step"
         super(FishAssignmentStep, self).__init__(cfg)
 
@@ -114,6 +124,10 @@ class FishAssignmentStep(Step):
 
         # read in FISH tolerance, and the filename containing raw FISH data
         tol           = self.cfg.get("runtime/FISH/tol")
+
+        if 'batches' in self.cfg.get("restraints/FISH"):
+             self.batch         = self.cfg.get("runtime/FISH/batch")
+             logger.info(self.batch)
 
 
         self.tmp_extensions = [".npz"]
@@ -171,7 +185,6 @@ class FishAssignmentStep(Step):
 
         # from haploid to multiploid representation
         copy_index = hss.index.copy_index
-
         assert(crd.shape[2] == 3)    # check consistency in array sizes
   
         fish_input_file = cfg.get('restraints/FISH/input_fish')
@@ -326,6 +339,11 @@ class FishAssignmentStep(Step):
 
         tmp_assignment_file = fish_assignment_file + '.tmp'
 
+        random.seed(42)
+        indici_to_select = np.sort(random.sample(range(len(pairs)) , int(len(pairs) * self.batch  / 100)))
+        logger.info(indici_to_select)
+        logger.info(np.array(minpairdists)[indici_to_select].shape)
+
         # write fish actdist file for current iteration: need to distinguish if pairs or not, things are out
         with h5py.File(tmp_assignment_file, "w") as o5f:
 
@@ -334,13 +352,13 @@ class FishAssignmentStep(Step):
                   dict_entries = list(h5.keys())
 
                   if 'pairs' in dict_entries:
-                       o5f.create_dataset('pairs',      data =   pairs,  dtype='i4')
+                       o5f.create_dataset('pairs',      data =   np.array(pairs)[indici_to_select],  dtype='i4')
 
                   if 'pair_min' in dict_entries:
-                       o5f.create_dataset('pair_min',   data =  minpairdists,  dtype='f4')
+                       o5f.create_dataset('pair_min',   data =  np.array(minpairdists)[indici_to_select],  dtype='f4')
 
                   if 'pair_max' in dict_entries:
-                       o5f.create_dataset('pair_max',   data =  maxpairdists,  dtype='f4')
+                       o5f.create_dataset('pair_max',   data =  np.array(maxpairdists)[indici_to_select],  dtype='f4')
 
                   if 'probes' in dict_entries:
                        o5f.create_dataset('probes',     data =  probes,  dtype='i4')

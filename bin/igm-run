@@ -62,7 +62,7 @@ def run_pipeline(cfgfile):
         
         # ... or generate random initial coordinates w territories and relax them to avoid steric clashes
         else:
-            igm.logger.info('Generating random initial coordinates within territories...')
+            igm.logger.info('Initialize genome particle coordinates...')
             randomStep = igm.RandomInit(cfg)
             randomStep.run()
             igm.logger.info('\n')
@@ -271,6 +271,7 @@ def run_pipeline(cfgfile):
                 if is_fish_incomplete:
                     # ... remove current DamiD sigma value from cfg["runtime"], and move on to the next
                     del cfg["runtime"]["FISH"]["tol"]
+                    del cfg["runtime"]["FISH"]["batch"]
                     # reset iteration number counter
                     opt_iter = 0
 

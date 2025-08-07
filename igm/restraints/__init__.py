@@ -14,3 +14,4 @@ from .tracing     import Tracing
 from .centromere  import Centromere
 from .gendamid    import GenDamid
 from .polymer_bis import PolymerDistrib
+from .singlecellfish import SingleCellFish

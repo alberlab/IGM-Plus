@@ -9,6 +9,8 @@ from ..model.particle import Particle
 import h5py
 from ..utils.log import logger
 
+import random
+
 # helper functions
 
 def sort_radially(ii, crd):
@@ -55,7 +57,7 @@ class Fish(Restraint):
     rtype:      string, 'r' or 'R' (RADIAL), 'p' or 'P' (PAIR), and combinations
     tolerance:  tolerance parameter to impose distances
     kspring:    FISH restraining constant
-    
+ 
     Read in a fish_file generated from the AssignmentStep, from haploid to diploid annotations, select min or max pair (probe), apply restraints
     """
     
@@ -76,12 +78,11 @@ class Fish(Restraint):
         self.struct_id            = struct_id
         self.tolerance            = tolerance
         self.kspring              = kspring
-        
+
         # list to which FISH restraints are appended to the model object
         self.forceID   = []
 
-   
-        
+    
     def _apply(self, model):
         
             # copy index, includes the diploid annotations
@@ -112,6 +113,7 @@ class Fish(Restraint):
 
             if minradial:
 
+               # identify a batch 
                probes  = hff['probes'][()]
                targets = hff['radial_min'][:, struct_id][()]   # select only those "target_distance"s pertaining such a structure
    
@@ -230,6 +232,7 @@ class Fish(Restraint):
 
                pairs   = hff['pairs'][()]
                targets = hff['pair_max'][:, struct_id][()]
+
 
                for q, (i, j) in enumerate(pairs):
                 
