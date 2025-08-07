@@ -1,12 +1,14 @@
 
-IGM: An Integrated Genome Modeling Platform
-=====================================
-This is the modeling platform used in Frank U. Alber lab, University of California Los Angeles. The source code is in the ```igm``` folder.
+IGM-Plus: An Integrated Genome Modeling Platform (but better!)
+============================================
+This is the genome modeling platform used in Frank U. Alber lab, University of California Los Angeles. The source code is in the ```igm``` folder.
 A population of individual full genome (diploid) structures is generated, which fully recapitulates a variety of experimental genomic and/or imaging data. It does NOT preprocess raw data.
+
+We are currently working on an extensive user-friendly tutorial on `GitHub.io` to help users navigate parameter choice, set up their configuration file and run the code.
 
 August 25
 
-The current version improves upon [IGM 1.0][https://github.com/alberlab/IGM-Plus], by allowing the following data to be used in the modeling:
+The current version improves upon [IGM 1.0][https://github.com/alberlab/igm], by allowing the following data to be used in the modeling:
 - volume confinement from imaged single cell nuclear laminas, nucleoli, speckles
 - lamina DamID when using imaged single cell nuclear laminas, nucleoli, speckles
 - single cell chromating tracing data (e.g., DNA MERFISH, DNA seqFISH+)
