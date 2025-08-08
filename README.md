@@ -26,11 +26,21 @@ Updates
 August 25
 
 The current version improves upon [IGM 1.0][https://github.com/alberlab/igm], by allowing the following data to be used in the modeling:
+
 - volume confinement from imaged single cell nuclear laminas, nucleoli, speckles
 - lamina DamID when using imaged single cell nuclear laminas, nucleoli, speckles
-- single cell chromating tracing data (e.g., DNA MERFISH, DNA seqFISH+)
-- single cell paiwise distances
+- single cell chromating tracing data (e.g., DNA MERFISH, DNA seqFISH+):
+	* tracing data as target (x,y,z) locations for selected loci, OR/AND
+	* single cell paiwise distances OR/AND
+	* a chromatin fiber model that is compatible with the tracing data
 
+**Implementation changes**:
+
+- The iterative correction can be turned off by setting a flag to 0
+- intra HiC and inter HiC are handled as two separate restraints
+- Logging has been much improved to clearly show number of violations (and the structure displaying the most of those)
+- Initialization of structures has been greatly expanded; selected loci can be initialized in pre-determined locations, and linear interpolation is used to prime the other loci
+- Violations are recorded and printed out even after the initial relaxation step (no actual data here)
 - Remember that a version of LAMMPS with the required fixes is necessary
 
 
