@@ -297,6 +297,8 @@ class ExpEnvelope(Force):
         self.note = note
         self.rnum = len(particle_ids)
 
+        self.norm_factor = 2   # to be chosen by the user as of now
+
     def __str__(self):
         return "FORCE: {} {} {}".format(Force.FTYPES[self.ftype],
                                         self.rnum,
@@ -306,7 +308,6 @@ class ExpEnvelope(Force):
     def getScores(self, particles):
 
         # normalization factor to compute the residual associated with a particle outside/inside a lamina
-        norm_factor = 2
 
         scores = np.zeros(len(self.particle_ids))
 
@@ -367,7 +368,7 @@ class ExpEnvelope(Force):
                    if ((vol.matrice[tuple(id_int)+(3,)] == 0) and (self.k > 0)) or ((vol.matrice[tuple(id_int)+(3,)] != 0) and (self.k < 0)): 
     
                       # this is the vector (point to envelope), then the vector (center to envelope)
-                      scores[m] = np.linalg.norm(grid * (vol.matrice[tuple(id_int)][0:3] - id_int))/(norm_factor * np.linalg.norm(grid))   # * 0.05   # multiply by violation threshold
+                      scores[m] = np.linalg.norm(grid * (vol.matrice[tuple(id_int)][0:3] - id_int))/(self.norm_factor * np.linalg.norm(grid))   # * 0.05   # multiply by violation threshold
 
                    # else, in the grid and inside the lamina, no violation, no issue
 
@@ -404,7 +405,7 @@ class ExpEnvelope(Force):
                   if ((vol.matrice[tuple(id_int)+(3,)] != 0) and (self.k > 0)) or ((vol.matrice[tuple(id_int)+(3,)] == 0) and (self.k < 0)): 
 
                      # this is the vector (point to envelope), then the vector (center to envelope)
-                     scores[m] = np.linalg.norm(grid * (vol.matrice[tuple(id_int)][0:3] - id_int))/(norm_factor * np.linalg.norm(grid)) # * 0.05   # p.pos - center)  # the closest to the envelope
+                     scores[m] = np.linalg.norm(grid * (vol.matrice[tuple(id_int)][0:3] - id_int))/(self.norm_factor * np.linalg.norm(grid)) # * 0.05   # p.pos - center)  # the closest to the envelope
 
               # if outside the grid: 
               else:

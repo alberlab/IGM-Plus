@@ -114,9 +114,6 @@ def Preprocess(cfg):
     #Generate genome, index objects (as in alabtools)
     genome, index = PrepareGenomeIndex(cfg)
 
-    logger.info(genome)
-    logger.info(index.chrom)
-
     # number of structures in population, number of beads
     nstruct = cfg['model']['population_size']
     logger.info('Population size = ' + str(nstruct))
@@ -210,8 +207,6 @@ def Preprocess(cfg):
 
         cpfname = os.path.join(cfg['parameters']['tmp_dir'], 'consecutive_contacts.npy')
         np.save(cpfname, cps)      # save file with the consecutive contact probabilities
-
-        logger.info('Array of consecutive contacts just saved. IGM ready to go on...')
 
         # update 'runtime' entry of the configuration object, where we track parameters along the optimization
         cfg['runtime']['consecutive_contact_probabilities'] = cpfname
