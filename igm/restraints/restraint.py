@@ -13,20 +13,17 @@ class Restraint(object):
     STERIC = -1
     CONSECUTIVE = 0
     HIC = 1
-    INTRA_HIC = 9
-    INTER_HIC = 10
-    DAMID = 2
-    FISH_RADIAL = 3
-    FISH_PAIR = 4
-    SPRITE = 5
-    ENVELOPE = 6
-    EXCLUDED_VOLUME = 7
-    NUCL_EXCLUDED_VOLUME = 8
-    TRACING = 11
-    CENTROMERE = 12
-    NUCLDAMID = 13
-    NEW_POLY = 14
-    SC_DISTANCES = 15
+    INTRA_HIC = 2
+    INTER_HIC = 3
+    DAMID = 4
+    FISH_RADIAL = 5
+    FISH_PAIR = 6
+    SPRITE = 7
+    ENVELOPE = 8
+    TRACING = 9
+    CENTROMERE = 10
+    NEW_POLY = 11
+    SC_DISTANCES = 12
 
     
 
