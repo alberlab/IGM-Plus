@@ -2,7 +2,8 @@
 IGM-Plus: An Integrated Genome Modeling Platform (but better!)
 ============================================
 This is the genome modeling platform used in Frank Alber lab, Department of Microbiology, Immunology and Molecular Genetics, University of California Los Angeles. The source code is in the ```igm``` folder.
-A population of individual full genome (diploid) structures is generated, which fully recapitulates a variety of experimental genomic and/or imaging data. It does NOT preprocess raw data.
+A population of single cell chromosome/whole genome single-copy/diploid structures is generated, which fully recapitulate a variety of experimental genomic and/or imaging data. It does NOT preprocess raw data.
+Structures can be further processed using the [analysis package][https://github.com/alberlab/genome3danalysis] that is also available.
 
 We are currently working on an extensive user-friendly tutorial on `GitHub.io` to help users navigate parameter choice, set up their configuration file and run the code.
 
