@@ -65,9 +65,6 @@ def add_tracing(model, cfg, struct_id, monitored_restraints):
             # need to use one reference tolerance value
             rad_tol = 500   # in nm, this is to loop over [NOT in the relax step]
 
-            logger.info('Positioning traced loci into their target positions with tolerance = ')
-            logger.info(rad_tol)
-
             # add "Imaging" class restraints
             imag = Tracing(
                 tracing_assignment_file,
@@ -479,9 +476,6 @@ class ModelingStep(Step):
                  
         else:
  
-             logger.info(cfg['restraints']['polymer']['assignment_file'])
-             logger.info(cfg['restraints']['polymer']['tolerance'])
-
              pp = PolymerDistrib(index = index, kspring = cfg['restraints']['polymer']['polymer_kspring'],
                                   tolerance = cfg['restraints']['polymer']['tolerance'], struct_id = struct_id,
                                   polymer_assignment_file = cfg['runtime']['polymer']['assignment_file'])
@@ -493,8 +487,6 @@ class ModelingStep(Step):
                   monitored_restraints.append(pp)
 
         add_envelope(model, cfg, struct_id, monitored_restraints)
-        logger.info(model.forces[-1])
-        logger.info('Added the lamina volume confinement')
 
         # ===== add restraints from tracing and volumetric =====
 
@@ -534,8 +526,6 @@ class ModelingStep(Step):
         if "FISH" in cfg['restraints']:
             add_fish(model, cfg, index, struct_id, monitored_restraints)          # read parameters from cfg file
        
-        print(len(index), len(model.particles))
- 
         # ========Optimization using Simulated Annealing and Conjugate Gradient =======
         cfg['runtime']['run_name'] = cfg.get('runtime/step_hash') + '_' + str(struct_id)
         optinfo = model.optimize(cfg)
