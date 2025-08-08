@@ -40,9 +40,10 @@ Repository Organization
 -----------------------
 
 - ``` igm ```: full IGM code(s)
-- ``` bin ```: IGM run, server and GUI scripts. In particular, refer to ```igm-run.sh``` (actual submission script) and ```igm-report.sh``` (post-processing automated script)
-- ``` test ```: example inputs (.hcs, .json files) for demo run
+- ``` bin ```: IGM run master file. In particular, refer to ```igm-run.sh``` (actual submission script) and ```igm-report.sh``` (post-processing automated script)
+- ``` demo ```: example inputs (.hcs, .json files) for demo run
 - ``` HPC_scripts ```: create ipyparallel environment and submit actual IGM run on a SGE scheduler based HpC cluster
+
 - ```igm-run_scheme.pdf```: is a schematic which breaks down the different computing levels of IGM and tries to explain how the different parts of the code are related to one another.
 - ```IGM_documentation.pdf```: documentation (in progress)
 - ```igm-config_all.json```: most comprehensive configuration file which shows parameters for all data sets that can be accommodated
@@ -54,8 +55,8 @@ IGM not longer supports python 2, so you'll need a python3 environment.
 The package depends on a number of other libraries, most of them publicly 
 available on pip. In addition, some other packages are required: 
 
-- alabtools (github.com/alberlab/alabtools)
-- a modified version of LAMMPS (github.com/alberlab/lammpgen)
+- `alabtools` (`github.com/alberlab/alabtools`)
+- a modified version of `LAMMPS` (`github.com/alberlab/lammpgen`) with fixes implementing user-defined forces (e.g., HarmonicLowerBound, HarmonicUpperBound, volumetric_restraint, etc)
 
 Installation on linux
 ---------------------
@@ -119,19 +120,18 @@ Important notes
     of data, and minimization of memory required by the scheduler and workers. That means, in short, that scheduler, workers 
     and the node which executes the igm-run script *need to have access to a shared filesystem where all the files will be 
     located*.
--   Preprocessing of data is a big deal itself. Hi-C matrices need to be transformed to probability matrices, DamID 
-    profiles too, FISH and SPRITE data needs to be preprocessed and transformed to the correct format. Some of these
+-   Over the 10+ last years of simulating genome structures, we have grown to accept the fact that preprocessing the experimental data can be an art. For example, Hi-C raw counts need to be transformed to probability matrices. Some of these
     processes have yet to be completely and exaustively documented publicly. We are working on it, but in the meantime
     email if you need help.
   
 Instructions for Use
 ----
  
-In order to generate population of structures, the code has to be run in parallel mode, and High Performance Computing is necessary. The scripts to do that on a SGE scheduler-based HPC resources are provided in the ```HCP_scripts``` folder. Just to get an estimate, using 250 independent cores allows generating a 1000 200 kb resolution structure population in 10-15 hour computing time, which can vary depending on the number of different data sources that are used and on the number of iterations one decides to run.
+In order to generate population of structures, the code has to be run in parallel mode, best if on HCP clusters. The scripts to do that on a SGE scheduler-based HPC resources are provided in the ```HCP_scripts``` folder. Just to get an estimate, using 250 independent cores allows generating a 1000 200 kb resolution structure population in 10-15 hour computing time, which can vary depending on the number of different data sources that are used and on the number of iterations one decides to run.
 
 Populations of 5 or 10 structures at 200kb resolution (which is the current highest resolution we simulated) could in principle be generated serially on a "normal" desktop computer, but they have little statistical relevance. For example, 10 structures would only allow to deconvolute Hi-C contacts with probability larger than 10%, which is not sufficient for getting realistic populations. Serial executions are appropriate only at much lower resolution, as the computing burden is also much lower (an example is provided in the ```demo``` folder, see also Software demo)
 
-Due to the necessity of HPC resources, we strongly recommend that the software be installed and run in a Linux environment. ALL the populations we have generated and analyzed were generated using a Linux environment. We cannot guarantee full functionality on a MacOS or Windows.
+Due to the necessity of HPC resources, we strongly recommend that the software be installed and run in a Linux environment. ALL the populations we have generated and analyzed were generated using a `Linux` environment. Again, please understand that We cannot guarantee full functionality on a MacOS or Windows.
 
 In order to run IGM to generate a population which uses a given combination of data sources, the ```igm-config.json``` file needs to be edited accordingly, by specifying the input files and adding/removing the parameters for each data source when applicable (a detailed description of the different entries that are available is given under ```igm/core/defaults```). Then, software can be run using ```igm-run igm-config.json```. Specifically:
  
