@@ -268,11 +268,6 @@ class RelaxInit(Step):
         if 'speckles' in cfg['model']['restraints']:
             add_speckles(model, cfg, struct_id, monitored_restraints)
 
-        logger.info(model.forces[-4])
-        logger.info(model.forces[-3])
-        logger.info(model.forces[-2])
-        logger.info(model.forces[-1])
-
         # ========Optimization
 
         # set "run_name" variable into "runtime" dictionary 
