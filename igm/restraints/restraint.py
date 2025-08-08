@@ -26,6 +26,8 @@ class Restraint(object):
     CENTROMERE = 12
     NUCLDAMID = 13
     NEW_POLY = 14
+    SC_DISTANCES = 15
+
     
 
 

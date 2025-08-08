@@ -47,10 +47,9 @@ class SingleCellFish(Restraint):
 
         for i, (m,n) in enumerate(pair[here_pairs]):
 
-            print(i, m, n, target[here_pairs][i])
-            f = model.addForce(HarmonicUpperBound((m,n), k = self.k, d = target[here_pairs][i] + self.tol, note = Restraint.FISH_PAIR))
+            f = model.addForce(HarmonicUpperBound((m,n), k = self.k, d = target[here_pairs][i] + self.tol, note = Restraint.SC_DISTANCES))
             self.forceID.append(f)
 
-            f = model.addForce(HarmonicLowerBound((m,n), k = self.k, d = max(0,target[here_pairs][i] - self.tol), note = Restraint.FISH_PAIR))
+            f = model.addForce(HarmonicLowerBound((m,n), k = self.k, d = max(0,target[here_pairs][i] - self.tol), note = Restraint.SC_DISTANCES))
             self.forceID.append(f)
 
