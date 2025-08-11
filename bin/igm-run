@@ -121,8 +121,6 @@ def run_pipeline(cfgfile):
 
             if 'tracing' in cfg['restraints']:
 
-                # this would probably go to some kind of an Assignment Step
- 
                 # this is the _init function of the Step.py class: we only need the tolerance value set up
                 # prepare the list of imaging tolerances in the "runtime" status, unless already there
                 if 'tol_list' not in cfg.get("runtime/tracing"):
@@ -132,7 +130,6 @@ def run_pipeline(cfgfile):
                 if  'tol'  not in cfg.get("runtime/tracing"):
                     cfg["runtime"]["tracing"]["tol"]      = cfg.get("runtime/tracing/tol_list").pop(0)
 
-                #iter_steps.append(igm.ImagedLociAssignmentStep)
                 igm.logger.info('      Using chromatin-traced loci in modeling...')
 
             if 'Hi-C'      in cfg['restraints']:

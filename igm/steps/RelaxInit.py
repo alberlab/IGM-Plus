@@ -218,9 +218,6 @@ class RelaxInit(Step):
         for i in range(n_particles):
             model.addParticle(crd[i], radii[i], Particle.NORMAL)
 
-        logger.info('Number of physical particles/domains = ')
-        logger.info(n_particles)
-
         # ========Add EXCLUDED VOLUME restraints =========
 
         # add excluded volume restraint
@@ -252,8 +249,6 @@ class RelaxInit(Step):
 
         # ======= ADD NUCLEAR VOLUME CONFINEMENT  add nucleus envelope restraint (spherical, ellipsoidal OR from data) ====
         add_envelope(model, cfg, struct_id, monitored_restraints)
-        logger.info(model.forces[-1])
-        logger.info('Added the lamina volume confinement')
 
         # ===== add restraints from tracing and volumetric =====
 
