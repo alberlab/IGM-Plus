@@ -13,7 +13,7 @@ Cite
 ------------
 If you use genome structures generated using this platform OR you use the platform to generate your own structure, please consider citing our work
     
- Boninsegna, L., Yildirim, A., Polles, G. et al. Integrative genome modeling platform reveals essentiality of rare contact events in 3D genome organizations. Nat Methods 19, 938–949 (2022). https://doi.org/10.1038/s41592-022-01527-x.
+ Boninsegna, L., Yildirim, A., Polles, G., Zhan, Y., Quinodoz, SA., Finn, EH., Guttman, M., Zhou, XJ., Alber, F. [Integrative genome modeling platform reveals essentiality of rare contact events in 3D genome organizations.](https://doi.org/10.1038/s41592-022-01527-x) Nat Methods 19, 938–949 (2022)
 
 Notes
 --------
@@ -56,7 +56,7 @@ Repository Organization
 
 - ```igm-run_scheme.pdf```: is a schematic which breaks down the different computing levels of IGM and tries to explain how the different parts of the code are related to one another.
 - ```IGM_documentation.pdf```: documentation (in progress)
-- ```igm-config_all.json```: most comprehensive configuration file which shows parameters for all data sets that can be accommodated
+- ```igm-config_all.json```: most comprehensive configuration file which shows parameters for all data sets that can be accommodated [update in progress]
 
 
 Dependencies
@@ -66,7 +66,7 @@ The package depends on a number of other libraries, most of them publicly
 available on pip. In addition, some other packages are required: 
 
 - `alabtools` (`github.com/alberlab/alabtools`)
-- a modified version of `LAMMPS` (`github.com/alberlab/lammpgen`) with fixes implementing user-defined forces (e.g., HarmonicLowerBound, HarmonicUpperBound, volumetric_restraint, etc)
+- a modified version of `LAMMPS` (forked @ `github.com/alberlab/lammpgen`) with fixes implementing user-defined forces (e.g., HarmonicLowerBound, HarmonicUpperBound, volumetric_restraint, etc)
 
 Installation on linux
 ---------------------
@@ -119,7 +119,7 @@ Installation on linux
     
 -   If all the dependencies have been installed correctly, successful code installation should only take a few minutes.
  
--   If ```igm``` installation is successful, typing ```igm``` from the command line + TAB should show the different options (```igm-run```, ```igm-report```, etc.)
+-   If ```igm``` installation is successful, typing ```igm``` from the command line + ``tab`` should show the different options (```igm-run```, ```igm-report```, etc.)
     
 
 
@@ -130,7 +130,7 @@ Important notes
     of data, and minimization of memory required by the scheduler and workers. That means, in short, that scheduler, workers 
     and the node which executes the igm-run script *need to have access to a shared filesystem where all the files will be 
     located*.
--   Over the 10+ last years of simulating genome structures, we have grown to accept the fact that preprocessing the experimental data can be an art. For example, Hi-C raw counts need to be transformed to probability matrices. Some of these
+-   Over the 10+ last years of simulating genome structures, we have grown to accepting  preprocessing the experimental data can be an art. For example, Hi-C raw counts need to be transformed to probability matrices. Some of these
     processes have yet to be completely and exaustively documented publicly. We are working on it, but in the meantime
     email if you need help.
   
