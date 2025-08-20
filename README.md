@@ -20,12 +20,12 @@ Notes
 We strongly advice against installing the software on a MacOS. Our experience showed that installation steps are not transferable from one version to the next, so we removed that information from this file.
 
 
-Updates
+What is new
 ---------
 
 August 25
 
-The current version improves upon [IGM 1.0][https://github.com/alberlab/igm], by allowing the following data to be used in the modeling:
+The current version improves upon [IGM 1.0](https://github.com/alberlab/igm), by allowing the following data to be used in the modeling:
 
 - volume confinement from imaged single cell nuclear laminas, nucleoli, speckles
 - lamina DamID when using imaged single cell nuclear laminas, nucleoli, speckles
@@ -36,12 +36,14 @@ The current version improves upon [IGM 1.0][https://github.com/alberlab/igm], by
 
 **Implementation changes**:
 
-- The iterative correction can be turned off by setting a flag to 0
-- intra HiC and inter HiC are handled as two separate restraints
+- Single chromosome genome structures can also be generated, in addition to whole genome diploid structures
+- The Hi-C iterative correction can be turned off by setting a flag to 0
+- Chromatin bead radius can be selected by the user, instead of defining a given chromatin-to-nucleus occupancy value
+- Intra HiC and inter HiC are handled as two separate restraints
 - Logging has been much improved to clearly show number of violations (and the structure displaying the most of those)
 - Initialization of structures has been greatly expanded; selected loci can be initialized in pre-determined locations, and linear interpolation is used to prime the other loci
 - Violations are recorded and printed out even after the initial relaxation step (no actual data here)
-- Remember that a version of LAMMPS with the required fixes is necessary
+- Remember that a version of [LAMMPS](https://github.com/alberlab/lammpgen) with the required `fixes` is necessary.
 
 
  
