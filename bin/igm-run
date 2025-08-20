@@ -38,7 +38,7 @@ def run_pipeline(cfgfile):
 
         # read configuration file (.json) and get the parameters ready
         cfg = igm.Config(cfgfile)
-        igm.logger.info('Starting IGM pipeline. Configuration from ' + cfgfile)
+        igm.logger.info('Starting IGM pipeline. Configuration setup from ' + cfgfile)
 
         # Set up logger
         igm.SetupLogging(cfg)
@@ -69,14 +69,14 @@ def run_pipeline(cfgfile):
 
             # LB Polymer_assignment_step to reproduce distribution of distances
             if 'polymer' not in cfg['model']['restraints']:
-                   igm.logger.info('Assigning distance distributions to the polymer chain...')
+                   igm.logger.info('Heteropolymer model: Assigning distance distributions to the polymer chain')
                    polyStep = igm.PolymerAssignmentStep(cfg)
                    polyStep.run()
                    igm.logger.info('\n')
             else:
                    igm.logger.info('Using a homopolymer model for the chromatin fiber...')
 
-            igm.logger.info('Relaxing those random configurations w polymer and volume confinements...')
+            igm.logger.info('Relaxing initialized configurations w polymer, volume confinement and tracing restraints (if applicable)...')
             relaxStep = igm.RelaxInit(cfg)
             relaxStep.run()
             igm.logger.info('\n')
@@ -114,6 +114,11 @@ def run_pipeline(cfgfile):
 
                 # no need of A-step here: all loci are subjected to the nucleolar excluded volume force
                 igm.logger.info('Using nucleolus volume maps as data ...')
+
+            if 'speckles' in cfg['restraints']:
+
+                # no need of A-step here: all loci are subjected to the nucleolar excluded volume force
+                igm.logger.info('Using speckles volume maps as data ...')
 
             if 'nuclDamID' in cfg['restraints']:
                 iter_steps.append(igm.NuclDamidActivationDistanceStep)
