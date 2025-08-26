@@ -59,7 +59,7 @@ Repository Organization
 - ```igm-run_scheme.pdf```: is a schematic which breaks down the different computing levels of IGM and tries to explain how the different parts of the code are related to one another.
 - ```IGM_documentation.pdf```: documentation (in progress)
 - ```igm-config_all.json```: most comprehensive configuration file which shows parameters for all data sets that can be accommodated [update in progress]
-
+- ```config_schema.json```: detailed explanation of each dictionary entry in the configuration file
 
 Dependencies
 ------------

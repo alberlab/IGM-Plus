@@ -8,6 +8,7 @@ from .restraint import Restraint
 from ..model.forces import HarmonicUpperBound, HarmonicLowerBound
 
 class SingleCellFish(Restraint):
+
     """
     Add single cell pairwise distances to a structure.
     Use a combo of upper and lower harmonic restraint
@@ -17,7 +18,7 @@ class SingleCellFish(Restraint):
     distance_file : TRACING activation position file
     struct_id (int): single structure index
     tol : float
-        defining tolerance within which the position from imaging data is defined
+        defining tolerance for pairwise distances
     k (float): elastic constant for restraining
     """
     
@@ -34,16 +35,16 @@ class SingleCellFish(Restraint):
     
     def _apply(self, model):
 
-        """ Apply TRACING restraints """ 
+        """ Apply single cell distance matrix restraints """ 
 
-        pair           = self.distance_file['pair'][()]    # list of (phased) loci to restrain
+        pair           = self.distance_file['pair'][()]    # list of pairs to restrain
         target         = self.distance_file['target'][()]   # list of associated target distances
         assignment     = self.distance_file['assignment'][()]   # list of structure indexes thye have to be restrained in
 
         here_pairs     = np.where(assignment == self.struct_id)[0]   # positions in list of loci to be restrained in current structure
         #print(locus[here_loci])
 
-        # loop over those loci in the Activation File that need to be restrained in structure 'struct_id' (see ImagingActivationStep.py)
+        # loop over those pairs in the Activation File, whose distances to be restrained in structure 'struct_id'
 
         for i, (m,n) in enumerate(pair[here_pairs]):
 

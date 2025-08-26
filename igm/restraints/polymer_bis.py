@@ -1,7 +1,6 @@
 from __future__ import division, print_function
 
 import numpy as np
-from numpy.linalg import norm
 from .restraint import Restraint
 from ..model.forces import HarmonicUpperBound, HarmonicLowerBound
 from ..model.particle import Particle
@@ -14,7 +13,7 @@ from ..utils.log import logger
 class PolymerDistrib(Restraint):
 
     """
-    Object handles Polymer restraint, when distances are not uniform and/or follow a given distribution
+    Object handles Polymer restraint, when bond distances follow a given distribution
     
     Parameters
     ----------
