@@ -54,11 +54,10 @@ Repository Organization
 - ``` igm ```: full IGM code(s)
 - ``` bin ```: IGM run master file. In particular, refer to ```igm-run.sh``` (actual submission script) and ```igm-report.sh``` (post-processing automated script)
 - ``` demo ```: example inputs (.hcs, .json files) for demo run
-- ``` HPC_scripts ```: create ipyparallel environment and submit actual IGM run on a SGE scheduler based HpC cluster
-
+- ``` HPC_scripts ```: create ipyparallel environment and submit actual IGM run on a Sun Grid Engine (**SGE**) scheduler based HPC cluster (the kind of that is run on UCLA Hoffman2 cluster)
 - ```igm-run_scheme.pdf```: is a schematic which breaks down the different computing levels of IGM and tries to explain how the different parts of the code are related to one another.
 - ```IGM_documentation.pdf```: documentation (in progress)
-- ```igm-config_all.json```: most comprehensive configuration file which shows parameters for all data sets that can be accommodated [update in progress]
+- ```igm-config_TBD.json```: most comprehensive configuration file which shows parameters for all data sets that can be accommodated [update in progress]
 - ```config_schema.json```: detailed explanation of each dictionary entry in the configuration file
 
 Dependencies
