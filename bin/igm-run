@@ -340,7 +340,7 @@ def run_pipeline(cfgfile):
         raise
 
 # start the run as a subprocess
-print('[CONTROL] Starting Integrated Genome Modeling run...')
+print('[CONTROL] Starting IGM run...')
 p = Process(target=run_pipeline, args=(cfgfile, ))
 p.start()
 
@@ -413,4 +413,4 @@ except OSError:
 
 print('[CONTROL] Exiting')
 print('\n')
-print('[CONTROL] IGM run successfully completed, the igm-model.hss file containts the details of the optimized data-driven population! Please shut down the controller and the workers')
+print('[CONTROL] IGM run successfully completed, the igm-model.hss file containts the details of the optimized genome structures! Please shut down the controller and the workers')

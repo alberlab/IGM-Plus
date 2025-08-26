@@ -236,16 +236,16 @@ class RelaxInit(Step):
                      cfg['model']['restraints']['polymer']['polymer_kspring'],
                      contact_probabilities=contact_probabilities)
               model.addRestraint(pp)
+              monitored_restraints.append(pp)
 
         else:
-              logger.info(cfg['restraints']['polymer']['assignment_file'])
-              logger.info(cfg['restraints']['polymer']['tolerance'])
 
               pp = PolymerDistrib(index = index, kspring = cfg['restraints']['polymer']['polymer_kspring'], 
                                   tolerance = cfg['restraints']['polymer']['tolerance'], struct_id = struct_id,
                                   polymer_assignment_file = cfg['runtime']['polymer']['assignment_file'])
 
               model.addRestraint(pp)
+              monitored_restraints.append(pp)
 
         # ======= ADD NUCLEAR VOLUME CONFINEMENT  add nucleus envelope restraint (spherical, ellipsoidal OR from data) ====
         add_envelope(model, cfg, struct_id, monitored_restraints)
@@ -268,7 +268,7 @@ class RelaxInit(Step):
         # set "run_name" variable into "runtime" dictionary 
         cfg['runtime']['run_name'] = cfg['runtime']['step_hash'] + '_' + str(struct_id)
        
-        logger.info('igm.model object created! Now preparing scripts to run lammps and optimizing...')
+        logger.info('igm.model object created! Now preparing scripts to run LAMMPS and optimize structures ...')
  
         # run optimization of the structures, by enforcing excluded volume, polymer and envelope restraints
         model.optimize(cfg)
