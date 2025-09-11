@@ -12,6 +12,8 @@ class SingleCellFish(Restraint):
     """
     Add single cell pairwise distances to a structure.
     Use a combo of upper and lower harmonic restraint
+
+    (this is similar to the FISH restraint, but here we know which distances are from which single cell)
  
     Parameters
     ----------
