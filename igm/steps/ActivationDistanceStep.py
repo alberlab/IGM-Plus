@@ -395,11 +395,6 @@ def get_actdist(i, j, pwish, plast, hss, it_corr, contactRange=2, option=0):
     # define i-j contact value
     rcutsq = np.square(contactRange * (ri + rj))
     
-    #n_combinations = len(ii) * len(jj)
-    # n_possible_contacts = np.max(hss.index.copy) + 1
-    #n_possible_contacts = min(len(ii), len(jj))
-    # for diploid cell n_combinations = 2*2 =4
-    # n_possible_contacts = 2
     
     # LB change, Apr 16th 2021: get the distribution of distances: d(i,j) and d(i',j') only for intra
     if chrom[i] == chrom[j]:   # intrachromosomal
@@ -447,12 +442,12 @@ def get_actdist(i, j, pwish, plast, hss, it_corr, contactRange=2, option=0):
     # now, sort the whole matrix along both axes, and reshape that into a vector
     sortdist_sq = np.sort(d_sq[0:n_possible_contacts, :].ravel())
 
-    # iterative correction to the probability (see Nan's PhD proposal)
+    # iterative correction to the probability (see Nan's PhD proposal & NMETH2022 SI)
     
     if it_corr == 1:
     
         # compute the fraction of excess contacts imposed, replaced "plast" with "pwish"
-        t = cleanProbability(pnow, plast)      # try p = cleanProbability(pnow, pwish) for IT correction
+        t = cleanProbability(pnow, plast)     
 
         # compute the 'corrected probability' of contacts to be assigned, to be used to 
         # determine the activation distances for Hi-C restraints
