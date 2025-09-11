@@ -1,7 +1,7 @@
 
 IGM-Plus: An Integrated Genome Modeling Platform (but better!)
 ============================================
-This is the signature genome modeling platform used in Frank Alber lab, Department of Microbiology, Immunology and Molecular Genetics, University of California Los Angeles. The source code is in the ```igm``` folder.
+This is the signature genome modeling platform used in Frank Alber lab, Department of Microbiology, Immunology and Molecular Genetics, University of California Los Angeles (previously at the University of Southern California). The source code is in the ```igm``` folder.
 A population of single cell chromosome/whole genome single-copy/diploid structures is generated, which fully recapitulate a variety of experimental genomic and/or imaging data. It does NOT preprocess raw data.
 Structures can be further processed using the [analysis package][https://github.com/alberlab/genome3danalysis] that is also available.
 
@@ -17,13 +17,13 @@ If you use genome structures generated using this platform OR you use the platfo
 
 Notes
 --------
-We strongly advice against installing the software on a MacOS. Our experience showed that installation steps are not transferable from one version to the next, so we removed that information from this file.
+For the time being, we strongly advice against installing the software on a MacOS. Our experience showed that installation steps are not transferable from one version to the next, so we removed that information from this file.
 
 
 What is new
 ---------
 
-August 25
+September 2025
 
 The current version improves upon [IGM 1.0](https://github.com/alberlab/igm), by allowing the following data to be used in the modeling:
 
@@ -43,7 +43,7 @@ The current version improves upon [IGM 1.0](https://github.com/alberlab/igm), by
 - Logging has been much improved to clearly show number of violations (and the structure displaying the most of those)
 - Initialization of structures has been greatly expanded; selected loci can be initialized in pre-determined locations, and linear interpolation is used to prime the other loci
 - Violations are recorded and printed out even after the initial relaxation step (no actual data here)
-- Remember that a version of the Molecular Dynamics software [LAMMPS](https://github.com/alberlab/lammpgen) with the required `fixes` is necessary.
+- Do not forget that a version of the Molecular Dynamics software [LAMMPS](https://github.com/alberlab/lammpgen) with the required `fixes` is necessary.
 
 
  
