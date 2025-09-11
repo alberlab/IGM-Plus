@@ -4,10 +4,8 @@ from alabtools.utils import Genome, Index, make_diploid, make_multiploid
 from alabtools.analysis import HssFile, COORD_DTYPE
 from alabtools import Contactmatrix
 import os.path
-import json
+import json, os, numpy as np
 from six import string_types, raise_from
-import numpy as np
-import os
 from shutil import copyfile
 from .utils.log import logger
 
@@ -89,7 +87,7 @@ def PrepareGenomeIndex(cfg):
 
 def prepareHss(fname, nbead, nstruct, genome, index, radii, nucleus_shape='sphere', nucleus_parameters=5000.0, nucleus_volume=0, coord_chunks=None):
 
-    """ Prepare the population file (.hss extension) """
+    """ Prepare the population file (.hss extension), with all its attributes """
 
     with HssFile(fname, 'w') as hss:
 
