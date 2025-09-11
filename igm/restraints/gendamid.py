@@ -52,7 +52,7 @@ def snormsq_exp(x, vol):
 class GenDamid(Restraint):
 
     """
-    Object handle Extended DamID restraint: enforces proximity of genome particles to ANY laminas from experiments, either nuclear lamina or nucleolar or nuclear body-style laminas. If any of those can be represented with built-in ellipsoidal shapes, than we don't need to overcomplicate things with grids, but we can use the standard "DamID" restraint.
+    Object handle Extended DamID restraint: enforces proximity of genome particles to ANY laminas from experiments, either nuclear lamina or nucleolar or nuclear body-style laminas. If any of those can be represented with built-in ellipsoidal shapes, than we don't need to overcomplicate things with grids, but we can use the standard "DamID" restraint, which is also available
 
     Parameters
     ----------
