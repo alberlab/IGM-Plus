@@ -41,11 +41,11 @@ extensions = cythonize(extensions)
 
 setup(
         name = 'igm', 
-        version = '1.0.0', 
-        author = 'Guido Polles, Nan Hua', 
-        author_email = 'polles@usc.edu nhua@usc.edu', 
+        version = '2.0.0', 
+        author = 'Guido Polles, Nan Hua, Lorenzo Boninsegna', 
+        author_email = 'polles@usc.edu nhua@usc.edu bonimba@g.ucla.edu', 
         url = 'https://github.com/alberlab/igm', 
-        description = 'Integrated Genome Modeling',
+        description = 'Integrated Genome Modeling Plus',
         
         packages=find_packages('./igm/'),
         package_data={'igm.core' : ['defaults/*.json'],
