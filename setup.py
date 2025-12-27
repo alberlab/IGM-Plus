@@ -58,6 +58,6 @@ setup(
         
         ext_modules=extensions,
         include_dirs=[numpy.get_include()],
-        scripts=['bin/igm-run', 'bin/igm-server', 'bin/igm-register-dir', 'bin/igm-info-dir',
+        scripts=['bin/igm-run', 'bin/igm-run-mac', 'bin/igm-server', 'bin/igm-register-dir', 'bin/igm-info-dir',
                  'bin/igm-unregister-dir', 'bin/igm-stop', 'bin/igm-report'],
 )
