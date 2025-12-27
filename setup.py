@@ -41,7 +41,7 @@ extensions = cythonize(extensions)
 
 setup(
         name = 'igm', 
-        version = '2.0.0+fix_mac', 
+        version = '2.0.1', 
         author = 'Guido Polles, Nan Hua, Lorenzo Boninsegna', 
         author_email = 'polles@usc.edu nhua@usc.edu bonimba@g.ucla.edu', 
         url = 'https://github.com/alberlab/igm', 
