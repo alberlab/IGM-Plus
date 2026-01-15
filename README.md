@@ -69,40 +69,30 @@ available on pip. In addition, some other packages are required:
 - `alabtools` (`github.com/alberlab/alabtools`)
 - a modified version of `LAMMPS` (forked @ `github.com/alberlab/lammpgen`) with fixes implementing user-defined forces (e.g., HarmonicLowerBound, HarmonicUpperBound, volumetric_restraint, etc)
 
-Installation on linux
+Installation
 ---------------------
--   Many of the alabtools and IGM dependencies can be installed with a
-    few commands if you are using conda
-    (https://www.anaconda.com/distribution/)
-    
-    Please note, we are running conda versions back from 2019. More recent versions might cause compatibility issues.
-    ```
-    # optional - create a new environment for igm
-    conda create -n igm python=3.6
-    source activate igm
-    # install dependencies
-    conda install pandas swig cython cgal==4.14 hdf5 h5py numpy scipy matplotlib \
-                  tornado ipyparallel cloudpickle
-    ```
-    -   It looks like ```cgal``` version needs to be 4.14, there are some compatibility issues with latest 5.0 version.
-    
-    If you _really_ do not want to use conda, most of the packages can be 
-    installed with pip, but it is up to you to download and build cgal and 
-    hdf5, and eventually set the correct include/library paths during 
-    installation.
 
--   Install alabtools (github.com/alberlab/alabtools)
+-   NOTE: although IGM can be installed and run on MacOS, we intended this software to be run in parallel on Linux HPC clusters.
+    The parallelization code has been tested only on a Linux HPC with CentOS 7.9.2009 (Core). We cannot guarantee full functionality on other systems.
+
+-   We recommend using Python 3.11 and conda to manage the environment (https://www.anaconda.com/distribution/):
+    ```bash
+    conda create -n igm python=3.11 -y
+    conda activate igm
     ```
-    pip install git+https://github.com/alberlab/alabtools.git
-    ```
-    Note: on windows, conda CGAL generates the library, but the name depends 
-    on the build, e.g CGAL-vc140-mt-4.12.lib. Go to 
-    <environment directory>/Library/lib/ and copy the CGAL library to CGAL.lib
-    before pip installing alabtools.
+
+-   Install the alabtools library (https://github.com/alberlab/alabtools).
+
+-   Then install dependencies with conda-forge (you should have already installed many required packages with alabtools):
+    ```bash
+    conda install -c conda-forge \
+    tornado \
+    -y
+```
         
 -   Install IGM
-    ```
-    pip install git+https://github.com/alberlab/igm.git 
+    ```bash
+    pip install git+https://github.com/alberlab/IGM-Plus.git 
     ```
     
 -   Download and build a serial binary of the modified LAMMPS version
@@ -117,11 +107,14 @@ Installation on linux
     echo "[DEFAULT]" > ${HOME}/.igm/user_defaults.cfg
     echo "optimization/kernel_opts/lammps/lammps_executable = "$(pwd)/src/lmp_serial >> ${HOME}/.igm/user_defaults.cfg
     ```
+
+    NOTE: on MacOS, you may need to fix this LAMMPS compilation. This seems to be a user-specific issue, so please email us if you need help.
     
 -   If all the dependencies have been installed correctly, successful code installation should only take a few minutes.
  
 -   If ```igm``` installation is successful, typing ```igm``` from the command line + ``tab`` should show the different options (```igm-run```, ```igm-report```, etc.)
-    
+
+    NOTE: for MacOS, use the 'igm-run-mac' command instead of 'igm-run' to run the code.
 
 
 
