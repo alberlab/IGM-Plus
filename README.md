@@ -88,7 +88,7 @@ Installation
     conda install -c conda-forge \
     tornado \
     -y
-```
+    ```
         
 -   Install IGM
     ```bash
