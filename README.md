@@ -92,7 +92,12 @@ Installation
         
 -   Install IGM
     ```bash
-    pip install git+https://github.com/alberlab/IGM-Plus.git 
+    pip install git+https://github.com/alberlab/IGM-Plus.git
+    ```
+
+-   If the install fails with build-isolation / NumPy build errors (common on older HPC systems):
+    ```bash
+    pip install git+https://github.com/alberlab/IGM-Plus.git --no-build-isolation
     ```
     
 -   Download and build a serial binary of the modified LAMMPS version
