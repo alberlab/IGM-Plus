@@ -11,14 +11,18 @@ def find_packages(path='.'):
             ret.append(re.sub('^[^A-z0-9_]+', '', root.replace('/', '.')))
     return ret
 
+python_requires = '>=3.11'
 install_requires = [
-    'numpy>=1.9', 
-    'scipy>=0.16', 
-    'h5py>=2.5', 
-    'alabtools>=0.0.1',
-    'tqdm', 'tornado',
-    'cloudpickle',
-    'cython'
+    'numpy>=1.23,<3',
+    'scipy>=1.10',
+    'h5py>=3.8',
+    'matplotlib>=3.7',
+    'ipyparallel>=8.0',
+    'tqdm>=4.60',
+    'six>=1.16',
+    'tornado>=6.0',
+    'cloudpickle>=3.0',
+    "alabtools>=1.1.29"
 ]
 
 tests_require = [
@@ -41,7 +45,7 @@ extensions = cythonize(extensions)
 
 setup(
         name = 'igm', 
-        version = '2.0.1', 
+        version = '2.0.2', 
         author = 'Guido Polles, Nan Hua, Lorenzo Boninsegna', 
         author_email = 'polles@usc.edu nhua@usc.edu bonimba@g.ucla.edu', 
         url = 'https://github.com/alberlab/igm', 
@@ -52,6 +56,7 @@ setup(
                       'igm.ui': ['static/css/*', 'static/js/*', 'static/js/genome_visualizer/*', 'templates/*']},
         #package_data={'' : ['core/defaults/*', 'ui/static/css/*', 'ui/static/js/*', 'ui/static/js/genome_visualizer/*', 'ui/templates/*']},
         include_package_data=True,
+        python_requires=python_requires,
         install_requires=install_requires,
         tests_require=tests_require,
         extras_require=extras_require,
