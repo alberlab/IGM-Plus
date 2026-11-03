@@ -151,9 +151,11 @@ def Preprocess(cfg):
         logger.info(occupancy)
 
         # compute volume per basepair based on nuclear volume and chosen segmentation; hence, compute bead radius
-        rho = occupancy * nucleus_volume / (sum(index.end - index.start))
-        bp_sizes = index.end - index.start
-        sphere_volumes = [rho * s for s in bp_sizes]
+        # Cast before subtraction as well as summation to avoid int32 overflow.
+        beads_bp = index.end.astype(np.int64) - index.start.astype(np.int64)
+        genome_bp = beads_bp.sum(dtype=np.int64)
+        rho = occupancy * nucleus_volume / genome_bp
+        sphere_volumes = [rho * s for s in beads_bp]
         radii = ( np.array(sphere_volumes) / _43pi )**(1./3)
 
     else:
