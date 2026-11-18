@@ -940,6 +940,7 @@ def log_stats(hss, cfg):
 
                  if len(max_index) < 2:   # there is only one structure with maximal number of violations 
 
+                          max_index = int(max_index[0])
                           logger.info(bcolors.OKBLUE + '**** Mostly violated in structure %d =>  %f, [%d / %d] ****' +                            bcolors.ENDC, max_index, viol_by_struct[max_index]/imposed_by_struct[max_index], viol_by_struct[max_index], imposed_by_struct[max_index]
                         )
 
